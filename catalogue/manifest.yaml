@@ -40,6 +40,13 @@ spec:
       containers:
       - name: catalogue
         image: arunkumarnelluri/catalogue:v1
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "100m"
+            memory: "256Mi"
         envFrom:
         - configMapRef:
             name: catalogue
@@ -64,3 +71,24 @@ spec:
   - protocol: TCP
     port: 8080 #Service Port
     targetPort: 8080 #Container Port
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: catalogue
+  namespace: roboshop
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: catalogue
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: resource
+    resource:
+      name: cpu
+      target:
+        type: utilization
+        averageUtilization: 10
